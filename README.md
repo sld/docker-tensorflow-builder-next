@@ -102,9 +102,34 @@ docker-compose run tf
 | 1.9.0 | 3.6 | CentOS 6.6 | 9.1 | 0.19 | 7.1 | - | OK |
 | 1.9.0 | 3.6 | CentOS 6.6 | 9.2 | 0.19 | 7.1 | - | OK |
 
-## Authors
+
+## Forked project authors
 
 - Hadrien Mary <hadrien.mary@gmail.com>
+
+## Authors
+
+- Dimitri Gerin <dimitri.gerin@gmail.com>
+
+## Usage
+
+- Clone this repository:
+
+```bash
+git clone https://github.com/hadim/docker-tensorflow-builder.git
+```
+
+- Clone tensorflow project inside docker-tensorflow-builder (example with https://github.com/Dimitri1/tensorflow-quant)
+
+```bash
+cd docker-tensorflow-builder
+git clone https://github.com/Dimitri1/tensorflow-quant tensorflow
+```
+- build
+
+```bash
+bash build.sh
+```
 
 ## License
 
