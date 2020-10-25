@@ -89,6 +89,8 @@ docker-compose run tf
 
 | Tensorflow | Python | Distribution | Bazel | CUDA | cuDNN | NCCL | Comment |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| 2.0.1 | 3.6.8 | Ubuntu 18.04 | 0.24.1 | 10.0 | 7.5 | 2.4 | OK |
+| 2.0.1 | 3.6.8 | Ubuntu 18.04 | 0.24.1 | - | - | - | OK |
 | v2.0.0-alpha0 | 3.6 | Ubuntu 18.10 | 0.20 | 10.0 | 7.5 | 2.4 | seg fault error  |
 | v2.0.0-alpha0 | 3.6 | Ubuntu 18.10 | 0.20 | - | - | - | OK |
 | v2.0.0-alpha0 | 3.6 | Ubuntu 16.04 | 0.20 | 10.0 | 7.5 | 2.4 | TODO |
@@ -101,6 +103,10 @@ docker-compose run tf
 | 1.9.0 | 3.6 | CentOS 6.6 | 0.19 | 9.0 | 7.1 | - | OK |
 | 1.9.0 | 3.6 | CentOS 6.6 | 0.19 | 9.1 | 7.1 | - | OK |
 | 1.9.0 | 3.6 | CentOS 6.6 | 0.19 | 9.2 | 7.1 | - | OK |
+| 1.15.0 | 3.7.5 | Ubuntu 18.04 | 0.24.1 | - | - | - | seg fault error |
+| 1.15.0 | 3.6 | Ubuntu 18.04 | 0.24.1 | - | - | - | seg fault error |
+| 1.15.0 | 3.6.12 | Ubuntu 18.04 | 0.26.1 | 10.2 | 7.6 | 2.1 | OK |
+| 1.15.0 | 3.6.12 | Ubuntu 18.04 | 0.26.1 | - | - | - | OK |
 
 
 ## Forked project authors
