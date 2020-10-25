@@ -19,11 +19,13 @@ update-alternatives --set gcc "/usr/bin/gcc-$GCC_VERSION"
 update-alternatives --set g++ "/usr/bin/g++-$GCC_VERSION"
 gcc --version
 
+export NUMPY_VERSION=1.18.5
+
 # Install an appropriate Python environment
 conda config --add channels conda-forge
 conda create --yes -n tensorflow python==$PYTHON_VERSION
 source activate tensorflow
-conda install --yes numpy wheel bazel==$BAZEL_VERSION
+conda install --yes numpy==$NUMPY_VERSION wheel bazel==$BAZEL_VERSION
 #pip install keras-applications keras-preprocessing
 
 # Compile TensorFlow
