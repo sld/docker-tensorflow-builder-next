@@ -108,33 +108,19 @@ docker-compose run tf
 | 1.15.0 | 3.6.12 | Ubuntu 18.04 | 0.26.1 | 10.2 | 7.6 | 2.1 | OK |
 | 1.15.0 | 3.6.12 | Ubuntu 18.04 | 0.26.1 | - | - | - | OK |
 
+## Package Sources
 
-## Forked project authors
+* [bazel==0.26.1](https://github.com/bazelbuild/bazel/releases/tag/0.26.1)
+* [CUDA*.run <= 10.2](https://developer.nvidia.com/cuda-toolkit-archive)
+* [libnccl2](https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1604/x86_64/)
 
-- Hadrien Mary <hadrien.mary@gmail.com>
-
-## Authors
-
-- Dimitri Gerin <dimitri.gerin@gmail.com>
-
-## Usage
-
-- Clone this repository:
+## Repo Tree
 
 ```bash
-git clone https://github.com/hadim/docker-tensorflow-builder.git
-```
-
-- Clone tensorflow project inside docker-tensorflow-builder (example with https://github.com/Dimitri1/tensorflow-quant)
-
-```bash
-cd docker-tensorflow-builder
-git clone https://github.com/Dimitri1/tensorflow-quant tensorflow
-```
-- build
-
-```bash
-bash build.sh
+. #repo:docker-tensorflow-builder
+├── Hadrien Mary <hadrien.mary@gmail.com>
+│    └── Dimitri Gerin <dimitri.gerin@gmail.com>
+└────────└── Sar Malik <github.com/SarMalik>
 ```
 
 ## License
