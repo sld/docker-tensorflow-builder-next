@@ -136,6 +136,19 @@ Intermediate container layers used for the build process may take up considerabl
 * [CUDA*.run <= 10.2](https://developer.nvidia.com/cuda-toolkit-archive)
 * [libnccl2](https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1604/x86_64/)
 
+## Contribute
+
+To share compiled wheels from your platform with the community, see the repo [tensorflow-community-wheels](https://github.com/yaroslavvb/tensorflow-community-wheels/issues) and report your tested config with a PR.
+
+Before open an issue, include your container host hardware config and build script variables.
+
+```bash
+$ uname -a
+$ docker -v
+$ nvidia-smi
+$ cat build/compile.tf{version}-cuda{version}.sh
+```
+
 ## Repo Tree
 
 ```bash
