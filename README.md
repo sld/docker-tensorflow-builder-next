@@ -4,86 +4,108 @@ Docker images to compile TensorFlow yourself.
 
 Tensorflow only provide a limited set of build and it can be challenging to compile yourself on certain configuration. With this `Dockerfile`, you should be able to compile TensorFlow on any Linux platform that run Docker.
 
-Compilation images are provided for Ubuntu 18.10, Ubuntu 16.04, CentOS 7.4 and CentOS 6.6.
+Compilation images are provided for targeting platforms in the [dist](/dist) path.
+
+```json
+[
+   "ubuntu-16.04",
+   "ubuntu-18.04",
+   "ubuntu-18.10",
+   "ubuntu-20.04",
+   "centos-6.6",
+   "centos-7.4"
+]
+```
+
+This fork includes NVIDIA ``cuda==10.2, NCCL==2.7`` support and will be maintained on forward releases as TensorFlow evolves.
 
 ## Requirements
 
 - `docker`
 - `docker-compose`
 
-## Usage
+#### Optional GPU Hardware
 
-- Clone this repository:
+- Docker CUDA Support `nvidia-container-toolkit`
+- CUDA Hardware `tf.test.is_gpu_available()`
+
+## Usage: Compile Wheels in Container
+
+Get started compiling TensorFlow python3 wheels, ensure you have a supported docker container environment. Note that it may take a considerable time to prep image layers with CUDA env and build from source (example: Xeon 24C, build times ~3h).
+
+#### Clone Repo
 
 ```bash
-git clone https://github.com/hadim/docker-tensorflow-builder.git
+$ git clone https://github.com/SarMalik/docker-tensorflow-builder.git
+$ cd docker-tensorflow-builder
 ```
 
-### TensoFlow CPU
+#### Modify Build Params
 
-- Edit the `build.sh` file to modify TensorFlow compilation parameters. Then launch the build:
+Clone the [build/compile.tf{version}-cuda{version}.sh](/build) starter script with bash params for targeting wheel compilation. 
+
+Refer to tested configs listed in the [Builds](#Builds) section.
 
 ```bash
-LINUX_DISTRO="ubuntu-16.04"
-# or LINUX_DISTRO="ubuntu-18.10"
-# or LINUX_DISTRO="centos-7.4"
-# or LINUX_DISTRO="centos-6.6"
-cd "tensorflow/$LINUX_DISTRO"
-
-# Set env variables
-export PYTHON_VERSION=3.6
-export TF_VERSION_GIT_TAG=v1.13.1
-export BAZEL_VERSION=0.19
-export USE_GPU=0
-
-# Build the Docker image
-docker-compose build
-
-# Start the compilation
-docker-compose run tf
-
-# You can also do:
-# docker-compose run tf bash
-# bash build.sh
+$ cat build/compile.*.sh >> vim
 ```
 
-### TensorFlow GPU
-
-- Edit the `build.sh` file to modify TensorFlow compilation parameters. Then launch the build:
+#### Variables
 
 ```bash
+# Target:OS:Distribution
+# Supported: [
+#   'ubuntu-16.04',
+#   'ubuntu-18.04',
+#   'ubuntu-18.10',
+#   'ubuntu-20.04',
+#   'centos-6.6',
+#   'centos-7.4'
+# ]
 LINUX_DISTRO="ubuntu-16.04"
-# or LINUX_DISTRO="ubuntu-18.10"
-# or LINUX_DISTRO="centos-7.4"
-# or LINUX_DISTRO="centos-6.6"
-cd "tensorflow/$LINUX_DISTRO"
 
-# Set env variables
-export PYTHON_VERSION=3.6
-export TF_VERSION_GIT_TAG=v1.13.1
+# Target:Python Version
+# Number<1,2>
+export PYTHON_VERSION=3.6.12
+
+# Target:Checkout TensorFlow Release Tag
+# String<Number<2>>
+export TF_VERSION_GIT_TAG=v1.15.0
+
+# Target:Build:Bazel
+# String<Number<1,2>>
 export BAZEL_VERSION=0.19
+
+# TF Graph Hardware Support
+# 0: CPU, 1: GPU
+# Int
 export USE_GPU=1
-export CUDA_VERSION=10.0
-export CUDNN_VERSION=7.5
-export NCCL_VERSION=2.4
 
-# Build the Docker image
-docker-compose build
-
-# Start the compilation
-docker-compose run tf
-
-# You can also do:
-# docker-compose run tf bash
-# bash build.sh
+# Required if USE_GPU=1
+# CUDA, CUDNN, NCCL major increments
+# Number<1>
+export CUDA_VERSION=10.2
+export CUDNN_VERSION=7.6
+export NCCL_VERSION=2.7
 ```
+
+#### Build
+
+To instantiate the compiler environment, save and run the platform targeting script.
+
+```bash
+$ docker ./build/compile.tf{version}-cuda{version}.sh
+```
+
+#### Build Output
+
+The compiled wheels are written to `${PWD}/wheels/**/*.wheel`.
+
+#### Cleanup Output
+
+Intermediate container layers used for the build process may take up considerable space and can be safely removed from the host using the command: ``$ sudo docker system prune``.
 
 ---
-
-- Refer to [tested build configurations](https://www.tensorflow.org/install/source#tested_build_configurations) to know which `BAZEL_VERSION` you need.
-- Be patient, the compilation can be long.
-- Enjoy your Python wheels in the `wheels/` folder.
-- *Don't forget to remove the container to free the space after the build: `docker-compose rm --force`.*
 
 ## Builds
 
