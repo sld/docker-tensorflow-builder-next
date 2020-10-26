@@ -2,10 +2,10 @@
 
 # Cuda and friends installation done right.
 # Switch default Cuda version using symbolic link: cuda.switch 9.2
-# Install Cuda: cuda.install.cuda 10.0
-# Install cuDNN to CUDA_HOME: cuda.install.cudnn 7.5
-# Install NCCL to CUDA_HOME: cuda.install.nccl 2.4
-# Install Cuda, cuDNN and NCCL: cuda.install 10.0 7.5 2.4
+# Install Cuda: cuda.install.cuda 10.2
+# Install cuDNN to CUDA_HOME: cuda.install.cudnn 7.6
+# Install NCCL to CUDA_HOME: cuda.install.nccl 2.7
+# Install Cuda, cuDNN and NCCL: cuda.install 10.2 7.6 2.7
 
 # Author: Hadrien Mary <hadrien.mary@gmail.com>
 # License: MIT License
@@ -67,7 +67,7 @@ cuda.switch() {
   if [ -z "$1" ]; then
       echo "Please specify a Cuda version."
       echo "Usage: cuda.switch CUDA_VERSION"
-      echo "Cuda version available: 9.0, 9.1, 9.2, 10.0, 10.1"
+      echo "Cuda version available: 9.0, 9.1, 9.2, 10.0, 10.1, 10.2"
       return 1
   fi
 
@@ -103,7 +103,7 @@ cuda.install.cuda() {
     echo "Please specify a Cuda version."
     echo "Usage: cuda.install.cuda CUDA_VERSION"
     echo "Example: cuda.install.cuda 10.0"
-    echo "Cuda version available: 9.0, 9.1, 9.2, 10.0, 9.2."
+    echo "Cuda version available: 10.2, 10.0, 9.0, 9.1, 9.2."
     return 1
   fi
 
@@ -132,8 +132,10 @@ cuda.install.cuda() {
     CUDA_URL="https://developer.nvidia.com/compute/cuda/10.0/Prod/local_installers/cuda_10.0.130_410.48_linux"
   elif [ "$CUDA_VERSION" = "10.1" ]; then
     CUDA_URL="https://developer.nvidia.com/compute/cuda/10.1/Prod/local_installers/cuda_10.1.105_418.39_linux.run"
+  elif [ "$CUDA_VERSION" = "10.2" ]; then
+    CUDA_URL="https://developer.download.nvidia.com/compute/cuda/10.2/Prod/local_installers/cuda_10.2.89_440.33.01_linux.run"
   else
-    echo "Error: You need to set CUDA_VERSION to 9.0, 9.1, 9.2, 10.0 or 10.1."
+    echo "Error: You need to set CUDA_VERSION to 9.0, 9.1, 9.2, 10.0, 10.1, or 10.2."
     return 1
   fi
 
@@ -181,7 +183,7 @@ cuda.install.cudnn() {
     echo "Please specify a cuDNN version."
     echo "Usage: cuda.install.cudnn CUDNN_VERSION"
     echo "Example: cuda.install.cudnn 7.5"
-    echo "cuDNN version available: 7.0, 7.1, 7.4, 7.5."
+    echo "cuDNN version available: 7.0, 7.1, 7.4, 7.5, 7.6."
     return 1
   fi
 
@@ -239,8 +241,18 @@ cuda.install.cudnn() {
       return 1
     fi
 
+  # cuDNN 7.6
+  elif [ "$CUDNN_VERSION" = "7.6" ]; then
+
+    if [ "$CUDA_VERSION" = "10.2" ]; then
+      CUDNN_VERSION_DETAILED="7.6.5.32"
+    elif [ -n "$CUDNN_VERSION" ]; then
+      echo "Error: cuDNN $CUDNN_VERSION is not compatible with Cuda $CUDA_VERSION."
+      return 1
+    fi
+
   elif [ -n "$CUDNN_VERSION" ]; then
-    echo "Error: You need to set CUDNN_VERSION to 7.0, 7.1, 7.4 or 7.5."
+    echo "Error: You need to set CUDNN_VERSION to 7.0, 7.1, 7.4, 7.5, or 7.6."
     return 1
   fi
 
@@ -326,7 +338,7 @@ cuda.install.nccl() {
     # echo "Please specify a NCCL version."
     # echo "Usage: cuda.install.nccl NCCL_VERSION"
     # echo "Example: cuda.install.nccl 2.4"
-    # echo "NCCL version available: 2.1, 2.2, 2.3 and 2.4"
+    # echo "NCCL version available: 2.1, 2.2, 2.3, 2.4 and 2.7"
     # return 1
     # Default NCCL version
     NCCL_VERSION="2.4"
@@ -388,8 +400,18 @@ cuda.install.nccl() {
       return 1
     fi
 
+  # NCCL 2.7
+  elif [ "$NCCL_VERSION" = "2.7" ]; then
+
+    if [ "$CUDA_VERSION" = "10.2" ]; then
+      NCCL_VERSION_DETAILED="2.7.8-1"
+    elif [ -n "$NCCL_VERSION" ]; then
+      echo "Error: NCCL $NCCL_VERSION is not compatible with Cuda $CUDA_VERSION."
+      return 1
+    fi
+
   elif [ -n "$NCCL_VERSION" ]; then
-    echo "Error: You need to set NCCL_VERSION to 2.1, 2.2, 2.3 and 2.4."
+    echo "Error: You need to set NCCL_VERSION to 2.1, 2.2, 2.3, 2.4 or 2.7."
     return 1
   fi
 
