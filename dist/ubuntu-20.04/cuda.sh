@@ -348,8 +348,6 @@ cuda.install.cudnn() {
   echo "Cleanup files."
   rm -fr "$CUDNN_TMP_DIR_PATH"
   rm -fr "$CUDNN_DEV_TMP_DIR_PATH"
-  rm -f "$CUDNN_TMP_PATH"
-  rm -f "$CUDNN_DEV_TMP_PATH"
 
   echo "cuDNN $CUDNN_VERSION is installed at $CUDA_HOME."
 }
@@ -447,10 +445,6 @@ cuda.install.nccl() {
       echo "Error: NCCL $NCCL_VERSION is not compatible with Cuda $CUDA_VERSION."
       return 1
     fi
-
-  elif [ -n "$NCCL_VERSION" ]; then
-    echo "Error: You need to set NCCL_VERSION to 2.1, 2.2, 2.3, 2.4 or 2.7."
-    return 1
   fi
 
 
@@ -525,8 +519,6 @@ cuda.install.nccl() {
   echo "Cleanup files."
   rm -fr "$NCCL_TMP_DIR_PATH"
   rm -fr "$NCCL_DEV_TMP_DIR_PATH"
-  rm -f "$NCCL_TMP_PATH"
-  rm -f "$NCCL_DEV_TMP_PATH"
 
   echo "NCCL $NCCL_VERSION is installed at $CUDA_HOME."
 }
