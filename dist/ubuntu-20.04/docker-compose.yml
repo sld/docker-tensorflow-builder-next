@@ -6,6 +6,7 @@ services:
     tty: true
     volumes:
       - ../../wheels:/wheels
+      - ../../tmp:/src
     environment:
       - TF_VERSION_GIT_TAG=${TF_VERSION_GIT_TAG:?TF_VERSION_GIT_TAG}
       - PYTHON_VERSION=${PYTHON_VERSION:?PYTHON_VERSION}

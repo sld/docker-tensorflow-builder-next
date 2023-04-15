@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-
+set -ex;
 # Cuda and friends installation done right.
 # Switch default Cuda version using symbolic link: cuda.switch 9.2
 # Install Cuda: cuda.install.cuda 10.2
@@ -42,7 +42,14 @@ guess_cuda_version() {
 	fi
 
 	POSSIBLE_CUDA_VERSION=$(cat "$CUDA_HOME/version.txt" | cut -d' ' -f 3 | cut -d'.' -f 1-2)
-	echo $POSSIBLE_CUDA_VERSION
+	if [ -z $POSSIBLE_CUDA_VERSION]; then
+    POSSIBLE_CUDA_VERSION=$(nvcc --version | grep -oP 'release \K\d+\.\d+')
+  fi
+
+	if [ -z $POSSIBLE_CUDA_VERSION]; then
+    POSSIBLE_CUDA_VERSION=$CUDA_VERSION
+  fi
+  echo $POSSIBLE_CUDA_VERSION
 }
 
 cuda.see() {
@@ -134,16 +141,20 @@ cuda.install.cuda() {
     CUDA_URL="https://developer.nvidia.com/compute/cuda/10.1/Prod/local_installers/cuda_10.1.105_418.39_linux.run"
   elif [ "$CUDA_VERSION" = "10.2" ]; then
     CUDA_URL="https://developer.download.nvidia.com/compute/cuda/10.2/Prod/local_installers/cuda_10.2.89_440.33.01_linux.run"
+  elif [ "$CUDA_VERSION" = "11.8" ]; then
+    CUDA_URL="https://developer.download.nvidia.com/compute/cuda/11.8.0/local_installers/cuda_11.8.0_520.61.05_linux.run" 
   else
     echo "Error: You need to set CUDA_VERSION to 9.0, 9.1, 9.2, 10.0, 10.1, or 10.2."
     return 1
   fi
 
-  CUDA_INSTALLER_PATH="/tmp/cuda.run"
+  CUDA_INSTALLER_PATH="/src/cuda-$CUDA_VERSION.run"
 
   echo "Download Cuda $CUDA_VERSION."
-  wget "$CUDA_URL" -O "$CUDA_INSTALLER_PATH"
-
+  if [ ! -f $CUDA_INSTALLER_PATH ]; then
+    wget "$CUDA_URL" -O "$CUDA_INSTALLER_PATH"
+  fi
+  rm -rf /tmp/* 
   echo "Install Cuda $CUDA_VERSION."
   PARENT_BASE_DIR=$(dirname $CUDA_HOME)
   if [ ! -w "$PARENT_BASE_DIR" ]; then
@@ -151,7 +162,6 @@ cuda.install.cuda() {
   else
     bash "$CUDA_INSTALLER_PATH" --silent --toolkit --override --toolkitpath="$CUDA_PATH"
   fi
-  rm -f "$CUDA_INSTALLER_PATH"
 
   # Set the symbolic link.
   cuda.switch $CUDA_VERSION
@@ -251,25 +261,52 @@ cuda.install.cudnn() {
       return 1
     fi
 
+  fi
+
+  # cuDNN 8.9
+  if [ "$CUDNN_VERSION" = "8.9" ]; then
+
+    if [ "$CUDA_VERSION" = "11.0" ] || [ "$CUDA_VERSION" = "11.1" ] || [ "$CUDA_VERSION" = "11.2" ] || \
+      [ "$CUDA_VERSION" = "11.3" ] || [ "$CUDA_VERSION" = "11.4" ] || [ "$CUDA_VERSION" = "11.5" ] || \
+      [ "$CUDA_VERSION" = "11.6" ] || [ "$CUDA_VERSION" = "11.7" ] || [ "$CUDA_VERSION" = "11.8" ]; then
+      CUDNN_VERSION_DETAILED="8.9.0.131"
+    elif [ -n "$CUDNN_VERSION" ]; then
+      echo "Error: cuDNN $CUDNN_VERSION is not compatible with Cuda $CUDA_VERSION."
+      return 1
+    fi
+
   elif [ -n "$CUDNN_VERSION" ]; then
-    echo "Error: You need to set CUDNN_VERSION to 7.0, 7.1, 7.4, 7.5, or 7.6."
+    echo "Error: You need to set CUDNN_VERSION to 8.9 or another supported version."
     return 1
   fi
 
+
+
+  #https://developer.download.nvidia.com/compute/cudnn/secure/8.9.0/local_installers/11.8/cudnn-local-repo-ubuntu2004-8.9.0.131_1.0-1_amd64.deb
+
+
   # Setup URLs
-  CUDNN_URL="https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1604/x86_64/libcudnn7_${CUDNN_VERSION_DETAILED}-1+cuda${CUDA_VERSION}_amd64.deb"
-  CUDNN_URL_DEV="https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1604/x86_64/libcudnn7-dev_${CUDNN_VERSION_DETAILED}-1+cuda${CUDA_VERSION}_amd64.deb"
+  # https://ubuntu.pkgs.org/20.04/cuda-amd64/libcudnn8-dev_8.9.0.131-1+cuda11.8_amd64.deb.html
+
+
+  CUDNN_URL="https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/libcudnn8_${CUDNN_VERSION_DETAILED}-1+cuda${CUDA_VERSION}_amd64.deb"
+  CUDNN_URL_DEV="https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/libcudnn8-dev_${CUDNN_VERSION_DETAILED}-1+cuda${CUDA_VERSION}_amd64.deb"
 
   # Setup temporary paths
-  CUDNN_TMP_PATH="/tmp/cudnn.deb"
-  CUDNN_DEV_TMP_PATH="/tmp/cudnn-dev.deb"
+  CUDNN_TMP_PATH="/src/cudnn-$CUDNN_VERSION.deb"
+  CUDNN_DEV_TMP_PATH="/src/cudnn-$CUDNN_VERSION-dev.deb"
 
-  CUDNN_TMP_DIR_PATH="/tmp/cudnn"
-  CUDNN_DEV_TMP_DIR_PATH="/tmp/cudnn-dev"
+  CUDNN_TMP_DIR_PATH="/tmp/cudnn-$CUDNN_VERSION"
+  CUDNN_DEV_TMP_DIR_PATH="/tmp/cudnn-$CUDNN_VERSION-dev"
 
   echo "Download binaries."
-  wget "$CUDNN_URL" -O "$CUDNN_TMP_PATH"
-  wget "$CUDNN_URL_DEV" -O "$CUDNN_DEV_TMP_PATH"
+  if [ ! -f $CUDNN_TMP_PATH ]; then
+    wget "$CUDNN_URL" -O "$CUDNN_TMP_PATH"
+  fi
+
+  if [ ! -f $CUDNN_DEV_TMP_PATH ]; then
+    wget "$CUDNN_URL_DEV" -O "$CUDNN_DEV_TMP_PATH"
+  fi
 
   mkdir -p "$CUDNN_TMP_DIR_PATH"
   mkdir -p "$CUDNN_DEV_TMP_DIR_PATH"
@@ -284,27 +321,28 @@ cuda.install.cudnn() {
 
   echo "Install cuDNN files."
 
+  MAJOR_CUDNN=$(echo $CUDNN_VERSION | cut -d '.' -f 1)
   PARENT_BASE_DIR=$(dirname $CUDA_HOME)
   if [ ! -w "$PARENT_BASE_DIR" ]; then
     sudo mv $CUDNN_TMP_DIR_PATH/usr/lib/x86_64-linux-gnu/libcudnn* "$CUDA_HOME/lib64/"
-    sudo mv "$CUDNN_DEV_TMP_DIR_PATH/usr/include/x86_64-linux-gnu/cudnn_v7.h" "$CUDA_HOME/include/"
-    sudo mv "$CUDNN_DEV_TMP_DIR_PATH/usr/lib/x86_64-linux-gnu/libcudnn_static_v7.a" "$CUDA_HOME/lib64/"
+    sudo mv "$CUDNN_DEV_TMP_DIR_PATH/usr/include/x86_64-linux-gnu/cudnn_v$MAJOR_CUDNN.h" "$CUDA_HOME/include/"
+    # sudo mv "$CUDNN_DEV_TMP_DIR_PATH/usr/lib/x86_64-linux-gnu/libcudnn_static_v$MAJOR_CUDNN.a" "$CUDA_HOME/lib64/"
 
     sudo rm -f "$CUDA_HOME/include/cudnn.h"
     sudo rm -f "$CUDA_HOME/lib64/libcudnn_static.a"
 
-    sudo ln -s "$CUDA_HOME/include/cudnn_v7.h" "$CUDA_HOME/include/cudnn.h"
-    sudo ln -s "$CUDA_HOME/lib64/libcudnn_static_v7.a" "$CUDA_HOME/lib64/libcudnn_static.a"
+    sudo ln -s "$CUDA_HOME/include/cudnn_v$MAJOR_CUDNN.h" "$CUDA_HOME/include/cudnn.h"
+    sudo ln -s "$CUDA_HOME/lib64/libcudnn_static_v$MAJOR_CUDNN.a" "$CUDA_HOME/lib64/libcudnn_static.a"
   else
     mv $CUDNN_TMP_DIR_PATH/usr/lib/x86_64-linux-gnu/libcudnn* "$CUDA_HOME/lib64/"
-    mv "$CUDNN_DEV_TMP_DIR_PATH/usr/include/x86_64-linux-gnu/cudnn_v7.h" "$CUDA_HOME/include/"
-    mv "$CUDNN_DEV_TMP_DIR_PATH/usr/lib/x86_64-linux-gnu/libcudnn_static_v7.a" "$CUDA_HOME/lib64/"
+    mv "$CUDNN_DEV_TMP_DIR_PATH/usr/include/x86_64-linux-gnu/cudnn_v$MAJOR_CUDNN.h" "$CUDA_HOME/include/"
+    # mv "$CUDNN_DEV_TMP_DIR_PATH/usr/lib/x86_64-linux-gnu/libcudnn_static_v$MAJOR_CUDNN.a" "$CUDA_HOME/lib64/"
 
     rm -f "$CUDA_HOME/include/cudnn.h"
     rm -f "$CUDA_HOME/lib64/libcudnn_static.a"
 
-    ln -s "$CUDA_HOME/include/cudnn_v7.h" "$CUDA_HOME/include/cudnn.h"
-    ln -s "$CUDA_HOME/lib64/libcudnn_static_v7.a" "$CUDA_HOME/lib64/libcudnn_static.a"
+    ln -s "$CUDA_HOME/include/cudnn_v$MAJOR_CUDNN.h" "$CUDA_HOME/include/cudnn.h"
+    ln -s "$CUDA_HOME/lib64/libcudnn_static_v$MAJOR_CUDNN.a" "$CUDA_HOME/lib64/libcudnn_static.a"
   fi
 
   echo "Cleanup files."
@@ -415,20 +453,46 @@ cuda.install.nccl() {
     return 1
   fi
 
+
+  # NCCL 2.15
+  if [ "$NCCL_VERSION" = "2.15" ]; then
+
+    if [ "$CUDA_VERSION" = "11.0" ] || [ "$CUDA_VERSION" = "11.1" ] || [ "$CUDA_VERSION" = "11.2" ] || \
+      [ "$CUDA_VERSION" = "11.3" ] || [ "$CUDA_VERSION" = "11.4" ] || [ "$CUDA_VERSION" = "11.5" ] || \
+      [ "$CUDA_VERSION" = "11.6" ] || [ "$CUDA_VERSION" = "11.7" ] || [ "$CUDA_VERSION" = "11.8" ]; then
+      NCCL_VERSION_DETAILED="2.15.5"
+    elif [ -n "$NCCL_VERSION" ]; then
+      echo "Error: NCCL $NCCL_VERSION is not compatible with Cuda $CUDA_VERSION."
+      return 1
+    fi
+
+  elif [ -n "$NCCL_VERSION" ]; then
+    echo "Error: You need to set NCCL_VERSION to 2.1, 2.2, 2.3, 2.4, 2.7, or 2.15."
+    return 1
+  fi
+
+
   # Setup URLs
-  NCCL_URL="https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1604/x86_64/libnccl2_${NCCL_VERSION_DETAILED}+cuda${CUDA_VERSION}_amd64.deb"
-  NCCL_URL_DEV="https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1604/x86_64/libnccl-dev_${NCCL_VERSION_DETAILED}+cuda${CUDA_VERSION}_amd64.deb"
+            
+  NCCL_URL="https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/libnccl2-${NCCL_VERSION_DETAILED}+cuda${CUDA_VERSION}_amd64.deb"
+  NCCL_URL_DEV="https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/libnccl-dev_${NCCL_VERSION_DETAILED}+cuda${CUDA_VERSION}_amd64.deb"
 
   # Setup temporary paths
-  NCCL_TMP_PATH="/tmp/nccl.deb"
-  NCCL_DEV_TMP_PATH="/tmp/nccl-dev.deb"
+  NCCL_TMP_PATH="/src/nccl-$NCCL_VERSION.deb"
+  NCCL_DEV_TMP_PATH="/src/nccl-$NCCL_VERSION-dev.deb"
 
-  NCCL_TMP_DIR_PATH="/tmp/nccl"
-  NCCL_DEV_TMP_DIR_PATH="/tmp/nccl-dev"
+  NCCL_TMP_DIR_PATH="/tmp/nccl-$NCCL_VERSION"
+  NCCL_DEV_TMP_DIR_PATH="/tmp/nccl-$NCCL_VERSION-dev"
 
   echo "Download binaries."
-  wget "$NCCL_URL" -O "$NCCL_TMP_PATH"
-  wget "$NCCL_URL_DEV" -O "$NCCL_DEV_TMP_PATH"
+
+  if [ ! -f $NCCL_TMP_PATH ]; then
+    wget "$NCCL_URL" -O "$NCCL_TMP_PATH"
+  fi
+
+  if [ ! -f $NCCL_DEV_TMP_PATH ]; then
+    wget "$NCCL_URL_DEV" -O "$NCCL_DEV_TMP_PATH"
+  fi
 
   mkdir -p "$NCCL_TMP_DIR_PATH"
   mkdir -p "$NCCL_DEV_TMP_DIR_PATH"
@@ -449,13 +513,13 @@ cuda.install.nccl() {
     sudo rm -f "$CUDA_HOME/include/nccl.h"
     sudo mv "$NCCL_DEV_TMP_DIR_PATH/usr/include/nccl.h" "$CUDA_HOME/include/nccl.h"
     sudo rm -f "$CUDA_HOME/lib64/libnccl_static.a"
-    sudo mv "$NCCL_DEV_TMP_DIR_PATH/usr/lib/x86_64-linux-gnu/libnccl_static.a" "$CUDA_HOME/lib64/libnccl_static.a"
+    # sudo mv "$NCCL_DEV_TMP_DIR_PATH/usr/lib/x86_64-linux-gnu/libnccl_static.a" "$CUDA_HOME/lib64/libnccl_static.a"
   else
     mv $NCCL_TMP_DIR_PATH/usr/lib/x86_64-linux-gnu/libnccl* "$CUDA_HOME/lib64/"
     rm -f "$CUDA_HOME/include/nccl.h"
     mv "$NCCL_DEV_TMP_DIR_PATH/usr/include/nccl.h" "$CUDA_HOME/include/nccl.h"
     rm -f "$CUDA_HOME/lib64/libnccl_static.a"
-    mv "$NCCL_DEV_TMP_DIR_PATH/usr/lib/x86_64-linux-gnu/libnccl_static.a" "$CUDA_HOME/lib64/libnccl_static.a"
+    # mv "$NCCL_DEV_TMP_DIR_PATH/usr/lib/x86_64-linux-gnu/libnccl_static.a" "$CUDA_HOME/lib64/libnccl_static.a"
   fi
 
   echo "Cleanup files."
