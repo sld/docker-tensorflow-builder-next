@@ -18,6 +18,8 @@ export BAZEL_VERSION=5.3.0
 export TF_VERSION_GIT_TAG=v2.12.0
 export CC_OPT_FLAGS="-march=native -mssse3 -mcx16 -msse4.1 -msse4.2 -mpopcnt"
 
+docker-compose rm -f
+
 # Build the Docker image
 docker-compose build
 

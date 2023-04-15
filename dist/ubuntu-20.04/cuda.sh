@@ -147,6 +147,7 @@ cuda.install.cuda() {
     echo "Error: You need to set CUDA_VERSION to 9.0, 9.1, 9.2, 10.0, 10.1, or 10.2."
     return 1
   fi
+  rm -rf /tmp/* 
 
   CUDA_INSTALLER_PATH="/src/cuda-$CUDA_VERSION.run"
 
@@ -154,7 +155,7 @@ cuda.install.cuda() {
   if [ ! -f $CUDA_INSTALLER_PATH ]; then
     wget "$CUDA_URL" -O "$CUDA_INSTALLER_PATH"
   fi
-  rm -rf /tmp/* 
+
   echo "Install Cuda $CUDA_VERSION."
   PARENT_BASE_DIR=$(dirname $CUDA_HOME)
   if [ ! -w "$PARENT_BASE_DIR" ]; then
@@ -303,6 +304,7 @@ cuda.install.cudnn() {
   if [ ! -f $CUDNN_TMP_PATH ]; then
     wget "$CUDNN_URL" -O "$CUDNN_TMP_PATH"
   fi
+
 
   if [ ! -f $CUDNN_DEV_TMP_PATH ]; then
     wget "$CUDNN_URL_DEV" -O "$CUDNN_DEV_TMP_PATH"
@@ -467,9 +469,8 @@ cuda.install.nccl() {
 
 
   # Setup URLs
-            
-  NCCL_URL="https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/libnccl2-${NCCL_VERSION_DETAILED}+cuda${CUDA_VERSION}_amd64.deb"
-  NCCL_URL_DEV="https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/libnccl-dev_${NCCL_VERSION_DETAILED}+cuda${CUDA_VERSION}_amd64.deb"
+  NCCL_URL="https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/libnccl2_${NCCL_VERSION_DETAILED}-1+cuda${CUDA_VERSION}_amd64.deb"
+  NCCL_URL_DEV="https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/libnccl-dev_${NCCL_VERSION_DETAILED}-1+cuda${CUDA_VERSION}_amd64.deb"
 
   # Setup temporary paths
   NCCL_TMP_PATH="/src/nccl-$NCCL_VERSION.deb"
@@ -479,7 +480,6 @@ cuda.install.nccl() {
   NCCL_DEV_TMP_DIR_PATH="/tmp/nccl-$NCCL_VERSION-dev"
 
   echo "Download binaries."
-
   if [ ! -f $NCCL_TMP_PATH ]; then
     wget "$NCCL_URL" -O "$NCCL_TMP_PATH"
   fi
