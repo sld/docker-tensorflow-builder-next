@@ -8,7 +8,17 @@ rm -rf $CUDA_HOME/include/cudnn_version.h
 rm -rf $CUDA_HOME/include/cudnn_version.h
 
 ln -s /usr/include/x86_64-linux-gnu/cudnn_version_v8.h $CUDA_HOME/include/cudnn_version.h
+ln -s /usr/include/x86_64-linux-gnu/cudnn_backend_v8.h $CUDA_HOME/include/cudnn_backend.h
 ln -s /usr/include/x86_64-linux-gnu/cudnn_v8.h $CUDA_HOME/include/cudnn.h
+ln -s /usr/include/x86_64-linux-gnu/cudnn_adv_infer_v8.h $CUDA_HOME/include/cudnn_adv_infer.h
+ln -s /usr/include/x86_64-linux-gnu/cudnn_cnn_train_v8.h $CUDA_HOME/include/cudnn_cnn_train.h
+ln -s /usr/include/x86_64-linux-gnu/cudnn_ops_train_v8.h $CUDA_HOME/include/cudnn_ops_train.h
+ln -s /usr/include/x86_64-linux-gnu/cudnn_adv_train_v8.h $CUDA_HOME/include/cudnn_adv_train.h
+ln -s /usr/include/x86_64-linux-gnu/cudnn_cnn_infer_v8.h $CUDA_HOME/include/cudnn_cnn_infer.h
+ln -s /usr/include/x86_64-linux-gnu/cudnn_ops_infer_v8.h $CUDA_HOME/include/cudnn_ops_infer.h
+
+
+
 mkdir -p $CUDA_HOME/lib64/
 cp -R /usr/lib/x86_64-linux-gnu/*  $CUDA_HOME/lib64/
 ln -s /usr/include/nccl.h $CUDA_HOME/include/nccl.h
