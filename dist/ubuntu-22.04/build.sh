@@ -1,31 +1,26 @@
 #!/usr/bin/env bash
-set -e
+set -ex;
+export CUDA_HOME=/usr/local/cuda-11.8/targets/x86_64-linux
+ln -s /usr/local/cuda/bin $CUDA_HOME/bin
+ln -s /usr/local/cuda-11.8/nvvm $CUDA_HOME/nvvm
 
-export PATH="/conda/bin:/usr/bin:$PATH"
+rm -rf $CUDA_HOME/include/cudnn_version.h
+rm -rf $CUDA_HOME/include/cudnn_version.h
 
-if [ "$USE_GPU" -eq "1" ]; then
-  export CUDA_HOME="/usr/local/cuda"
-  alias sudo=""
-  source cuda.sh
-  cuda.install $CUDA_VERSION $CUDNN_VERSION $NCCL_VERSION
-  cd /
-fi
+ln -s /usr/include/x86_64-linux-gnu/cudnn_version_v8.h $CUDA_HOME/include/cudnn_version.h
+ln -s /usr/include/x86_64-linux-gnu/cudnn_v8.h $CUDA_HOME/include/cudnn.h
+mkdir -p $CUDA_HOME/lib64/
+cp -R /usr/lib/x86_64-linux-gnu/*  $CUDA_HOME/lib64/
+ln -s /usr/include/nccl.h $CUDA_HOME/include/nccl.h
 
-# Set correct GCC version
-GCC_VERSION="7"
-update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-$GCC_VERSION 10
-update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-$GCC_VERSION 10
-update-alternatives --set gcc "/usr/bin/gcc-$GCC_VERSION"
-update-alternatives --set g++ "/usr/bin/g++-$GCC_VERSION"
-gcc --version
 
-export NUMPY_VERSION=1.18.5
+mkdir -p /usr/local/cuda-11.8/targets/x86_64-linux/targets
+ln -s /usr/local/cuda-11.8/targets/x86_64-linux /usr/local/cuda-11.8/targets/x86_64-linux/targets/x86_64-linux
 
-# Install an appropriate Python environment
-conda config --add channels conda-forge
-conda create --yes -n tensorflow python==$PYTHON_VERSION
+export PATH="/conda/bin:/usr/bin:/usr/local/cuda/bin:$PATH"
 source activate tensorflow
-conda install --yes numpy==$NUMPY_VERSION wheel bazel==$BAZEL_VERSION
+# rm -rf /usr/local/cuda/include/cudnn_version.h
+
 #pip install keras-applications keras-preprocessing
 
 # Compile TensorFlow
@@ -34,6 +29,8 @@ conda install --yes numpy==$NUMPY_VERSION wheel bazel==$BAZEL_VERSION
 # You can also tweak the optimizations and various parameters for the build compilation.
 # See https://www.tensorflow.org/install/install_sources for more details.
 #TF_VERSION_GIT_TAG="v1.14.0-rc0"
+
+
 cd /
 rm -fr tensorflow/
 git clone --depth 1 --branch $TF_VERSION_GIT_TAG "https://github.com/tensorflow/tensorflow.git"
@@ -56,10 +53,11 @@ export PYTHON_LIB_PATH="$($PYTHON_BIN_PATH -c 'import site; print(site.getsitepa
 export PYTHONPATH=${TF_ROOT}/lib
 export PYTHON_ARG=${TF_ROOT}/lib
 
+
 # Compilation parameters
 export TF_NEED_CUDA=0
 export TF_NEED_GCP=1
-export TF_CUDA_COMPUTE_CAPABILITIES=5.2,3.5
+export TF_CUDA_COMPUTE_CAPABILITIES=8.6
 export TF_NEED_HDFS=1
 export TF_NEED_OPENCL=0
 export TF_NEED_JEMALLOC=1  # Need to be disabled on CentOS 6.6
@@ -83,7 +81,8 @@ export TF_NEED_ROCM=0
 export GCC_HOST_COMPILER_PATH=$(which gcc)
 
 # Here you can edit this variable to set any optimizations you want.
-export CC_OPT_FLAGS="-march=native"
+# export CC_OPT_FLAGS="-march=native"
+export CC_OPT_FLAGS="-march=native -mssse3 -mcx16 -msse4.1 -msse4.2 -mpopcnt"
 
 if [ "$USE_GPU" -eq "1" ]; then
   # Cuda parameters
@@ -99,6 +98,9 @@ if [ "$USE_GPU" -eq "1" ]; then
 
   # Those two lines are important for the linking step.
   export LD_LIBRARY_PATH="$CUDA_TOOLKIT_PATH/lib64:${LD_LIBRARY_PATH}"
+  export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${CUDA_HOME}/lib64
+  export PATH=$PATH:${CUDA_HOME}/bin
+
   ldconfig
 fi
 

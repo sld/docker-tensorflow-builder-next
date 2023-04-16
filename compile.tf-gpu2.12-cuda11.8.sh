@@ -1,6 +1,6 @@
 #!/bin/bash
-
-LINUX_DISTRO="ubuntu-20.04"
+set -ex;
+LINUX_DISTRO="ubuntu-22.04"
 
 cd "dist/$LINUX_DISTRO"
 
@@ -9,7 +9,7 @@ export PYTHON_VERSION=3.8.0
 
 export USE_GPU=1
 export CUDA_VERSION=11.8
-export CUDNN_VERSION=8.9
+export CUDNN_VERSION=8.7
 export NCCL_VERSION=2.15
 
 

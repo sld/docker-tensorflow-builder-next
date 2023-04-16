@@ -1,0 +1,43 @@
+FROM ubuntu:20.04
+
+ENV TZ=Europe/Kiev
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+RUN apt update && apt install -y \
+    build-essential \
+    curl \
+    git \
+    wget \
+    libjpeg-dev \
+    openjdk-8-jdk \
+    gcc-7 \
+    g++-7 \
+    && rm -rf /var/lib/lists/*
+
+# Install Anaconda
+WORKDIR /
+RUN wget "https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh" -O "miniconda.sh" && \
+    bash "miniconda.sh" -b -p "/conda" && \
+    rm miniconda.sh && \
+    echo PATH='/conda/bin:$PATH' >> /root/.bashrc && \
+    /conda/bin/conda config --add channels conda-forge && \
+    /conda/bin/conda update --yes -n base conda && \
+    /conda/bin/conda update --all --yes
+
+COPY cuda.sh /cuda.sh
+ENV CUDA_HOME "/usr/local/cuda"
+ENV CUDA_VERSION 11.8
+ENV CUDNN_VERSION 8.7
+ENV NCCL_VERSION 2.15
+RUN /cuda.sh $CUDA_VERSION $CUDNN_VERSION $NCCL_VERSION
+
+
+
+ENV PYTHON_VERSION 3.8.0
+ENV BAZEL_VERSION 5.3.0
+COPY conda.sh /conda.sh
+RUN /conda.sh $PYTHON_VERSION $BAZEL_VERSION
+
+COPY build.sh /build.sh
+
+CMD bash build.sh

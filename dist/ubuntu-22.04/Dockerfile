@@ -1,4 +1,4 @@
-FROM ubuntu:20.04
+FROM nvidia/cuda:11.8.0-cudnn8-devel-ubuntu22.04
 
 ENV TZ=Europe/Kiev
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
@@ -10,8 +10,8 @@ RUN apt update && apt install -y \
     wget \
     libjpeg-dev \
     openjdk-8-jdk \
-    gcc-7 \
-    g++-7 \
+    gcc \
+    g++ \
     && rm -rf /var/lib/lists/*
 
 # Install Anaconda
@@ -24,7 +24,18 @@ RUN wget "https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh"
     /conda/bin/conda update --yes -n base conda && \
     /conda/bin/conda update --all --yes
 
+# COPY cuda.sh /cuda.sh
+# ENV CUDA_HOME "/usr/local/cuda"
+# ENV CUDA_VERSION 11.8
+# ENV CUDNN_VERSION 8.9
+# ENV NCCL_VERSION 2.15
+# RUN /cuda.sh $CUDA_VERSION $CUDNN_VERSION $NCCL_VERSION
+
+ENV PYTHON_VERSION 3.8.0
+ENV BAZEL_VERSION 5.3.0
+COPY conda.sh /conda.sh
+RUN /conda.sh $PYTHON_VERSION $BAZEL_VERSION
+
 COPY build.sh /build.sh
-COPY cuda.sh /cuda.sh
 
 CMD bash build.sh

@@ -88,19 +88,13 @@ cuda.switch() {
 
   PARENT_BASE_DIR=$(dirname $CUDA_HOME)
   if [ ! -w "$PARENT_BASE_DIR" ]; then
-    sudo rm -f $CUDA_HOME
+    # sudo rm -f $CUDA_HOME
     sudo ln -s $NEW_CUDA_HOME $CUDA_HOME
   else
-    rm -f $CUDA_HOME
+    # rm -f $CUDA_HOME
     ln -s $NEW_CUDA_HOME $CUDA_HOME
   fi
   echo "Default Cuda version is now $NEW_CUDA_VERSION at $NEW_CUDA_HOME"
-}
-
-cuda.install() {
-  cuda.install.cuda $1
-  cuda.install.cudnn $2
-  cuda.install.nccl $3
 }
 
 cuda.install.cuda() {
@@ -153,8 +147,11 @@ cuda.install.cuda() {
 
   echo "Download Cuda $CUDA_VERSION."
   if [ ! -f $CUDA_INSTALLER_PATH ]; then
-    wget "$CUDA_URL" -O "$CUDA_INSTALLER_PATH"
+    wget -q "$CUDA_URL" -O "$CUDA_INSTALLER_PATH"
+    # echo $(md5sum $CUDA_INSTALLER_PATH) > $CUDA_INSTALLER_PATH.md5
   fi
+  # cp $CUDA_INSTALLER_PATH /tmp
+  # CUDA_INSTALLER_PATH=/tmp/$(basename $CUDA_INSTALLER_PATH)
 
   echo "Install Cuda $CUDA_VERSION."
   PARENT_BASE_DIR=$(dirname $CUDA_HOME)
@@ -167,6 +164,7 @@ cuda.install.cuda() {
   # Set the symbolic link.
   cuda.switch $CUDA_VERSION
 
+  ln -s /usr/local/cuda-$CUDA_VERSION/targets/x86_64-linux/include/cublas_api.h /usr/include/x86_64-linux-gnu
   echo "Cuda $CUDA_VERSION is installed at $CUDA_PATH."
 
   return 0
@@ -302,13 +300,20 @@ cuda.install.cudnn() {
 
   echo "Download binaries."
   if [ ! -f $CUDNN_TMP_PATH ]; then
-    wget "$CUDNN_URL" -O "$CUDNN_TMP_PATH"
+    wget -q "$CUDNN_URL" -O "$CUDNN_TMP_PATH"
+    # echo $(md5sum $CUDNN_TMP_PATH) > $CUDNN_TMP_PATH.md5
   fi
+  # cp $CUDNN_TMP_PATH /tmp
+  # CUDNN_TMP_PATH=/tmp/$(basename $CUDNN_TMP_PATH)
 
 
   if [ ! -f $CUDNN_DEV_TMP_PATH ]; then
-    wget "$CUDNN_URL_DEV" -O "$CUDNN_DEV_TMP_PATH"
+    wget -q "$CUDNN_URL_DEV" -O "$CUDNN_DEV_TMP_PATH"
+    # echo $(md5sum $CUDNN_DEV_TMP_PATH) > $CUDNN_DEV_TMP_PATH.md5
   fi
+  # cp $CUDNN_DEV_TMP_PATH /tmp
+  # CUDNN_DEV_TMP_PATH=/tmp/$(basename $CUDNN_DEV_TMP_PATH)
+
 
   mkdir -p "$CUDNN_TMP_DIR_PATH"
   mkdir -p "$CUDNN_DEV_TMP_DIR_PATH"
@@ -325,31 +330,33 @@ cuda.install.cudnn() {
 
   MAJOR_CUDNN=$(echo $CUDNN_VERSION | cut -d '.' -f 1)
   PARENT_BASE_DIR=$(dirname $CUDA_HOME)
-  if [ ! -w "$PARENT_BASE_DIR" ]; then
-    sudo mv $CUDNN_TMP_DIR_PATH/usr/lib/x86_64-linux-gnu/libcudnn* "$CUDA_HOME/lib64/"
-    sudo mv "$CUDNN_DEV_TMP_DIR_PATH/usr/include/x86_64-linux-gnu/cudnn_v$MAJOR_CUDNN.h" "$CUDA_HOME/include/"
-    # sudo mv "$CUDNN_DEV_TMP_DIR_PATH/usr/lib/x86_64-linux-gnu/libcudnn_static_v$MAJOR_CUDNN.a" "$CUDA_HOME/lib64/"
+  # if [ ! -w "$PARENT_BASE_DIR" ]; then
+  #   #sudo mv $CUDNN_TMP_DIR_PATH/usr/lib/x86_64-linux-gnu/libcudnn* "$CUDA_HOME/lib64/"
+  #   #sudo mv "$CUDNN_DEV_TMP_DIR_PATH/usr/include/x86_64-linux-gnu/cudnn_v$MAJOR_CUDNN.h" "$CUDA_HOME/lib64/"
+  #   # sudo mv "$CUDNN_DEV_TMP_DIR_PATH/usr/lib/x86_64-linux-gnu/libcudnn_static_v$MAJOR_CUDNN.a" "$CUDA_HOME/lib64/"
 
-    sudo rm -f "$CUDA_HOME/include/cudnn.h"
-    sudo rm -f "$CUDA_HOME/lib64/libcudnn_static.a"
+  #   # sudo rm -f "$CUDA_HOME/include/cudnn.h"
+  #   # sudo rm -f "$CUDA_HOME/lib64/libcudnn_static.a"
 
-    sudo ln -s "$CUDA_HOME/include/cudnn_v$MAJOR_CUDNN.h" "$CUDA_HOME/include/cudnn.h"
-    sudo ln -s "$CUDA_HOME/lib64/libcudnn_static_v$MAJOR_CUDNN.a" "$CUDA_HOME/lib64/libcudnn_static.a"
-  else
-    mv $CUDNN_TMP_DIR_PATH/usr/lib/x86_64-linux-gnu/libcudnn* "$CUDA_HOME/lib64/"
-    mv "$CUDNN_DEV_TMP_DIR_PATH/usr/include/x86_64-linux-gnu/cudnn_v$MAJOR_CUDNN.h" "$CUDA_HOME/include/"
-    # mv "$CUDNN_DEV_TMP_DIR_PATH/usr/lib/x86_64-linux-gnu/libcudnn_static_v$MAJOR_CUDNN.a" "$CUDA_HOME/lib64/"
+  #   sudo ln -s "$CUDA_HOME/include/cudnn_v$MAJOR_CUDNN.h" "$CUDA_HOME/include/cudnn.h"
+  #   sudo ln -s "$CUDA_HOME/include/cudnn_version_v$MAJOR_CUDNN.h" "$CUDA_HOME/lib64/cudnn_version.h"
+  #   sudo ln -s "$CUDA_HOME/lib64/libcudnn_static_v$MAJOR_CUDNN.a" "$CUDA_HOME/lib64/libcudnn_static.a"
+  # else
+  #   mv "$CUDNN_TMP_DIR_PATH/usr/lib/x86_64-linux-gnu/libcudnn*" "$CUDA_HOME/lib64/"
+  #   mv "$CUDNN_DEV_TMP_DIR_PATH/usr/include/x86_64-linux-gnu/cudnn_v$MAJOR_CUDNN.h" "$CUDA_HOME/lib64/"
+  #   # mv "$CUDNN_DEV_TMP_DIR_PATH/usr/lib/x86_64-linux-gnu/libcudnn_static_v$MAJOR_CUDNN.a" "$CUDA_HOME/lib64/"
 
-    rm -f "$CUDA_HOME/include/cudnn.h"
-    rm -f "$CUDA_HOME/lib64/libcudnn_static.a"
+  #   # rm -f "$CUDA_HOME/include/cudnn.h"
+  #   # rm -f "$CUDA_HOME/lib64/libcudnn_static.a"
 
-    ln -s "$CUDA_HOME/include/cudnn_v$MAJOR_CUDNN.h" "$CUDA_HOME/include/cudnn.h"
-    ln -s "$CUDA_HOME/lib64/libcudnn_static_v$MAJOR_CUDNN.a" "$CUDA_HOME/lib64/libcudnn_static.a"
-  fi
+  #   ln -s "$CUDA_HOME/include/cudnn_v$MAJOR_CUDNN.h" "$CUDA_HOME/lib64/cudnn.h"
+  #   ln -s "$CUDA_HOME/include/cudnn_version_v$MAJOR_CUDNN.h" "$CUDA_HOME/lib64/cudnn_version.h"
+  #   ln -s "$CUDA_HOME/lib64/libcudnn_static_v$MAJOR_CUDNN.a" "$CUDA_HOME/lib64/libcudnn_static.a"
+  # fi
 
   echo "Cleanup files."
-  rm -fr "$CUDNN_TMP_DIR_PATH"
-  rm -fr "$CUDNN_DEV_TMP_DIR_PATH"
+  # rm -fr "$CUDNN_TMP_DIR_PATH"
+  # rm -fr "$CUDNN_DEV_TMP_DIR_PATH"
 
   echo "cuDNN $CUDNN_VERSION is installed at $CUDA_HOME."
 }
@@ -481,12 +488,19 @@ cuda.install.nccl() {
 
   echo "Download binaries."
   if [ ! -f $NCCL_TMP_PATH ]; then
-    wget "$NCCL_URL" -O "$NCCL_TMP_PATH"
+    wget -q "$NCCL_URL" -O "$NCCL_TMP_PATH"
+    # echo $(md5sum $NCCL_TMP_PATH) > $NCCL_TMP_PATH.md5
   fi
+  # cp $NCCL_TMP_PATH /tmp
+  # NCCL_TMP_PATH=/tmp/$(basename $NCCL_TMP_PATH)
 
   if [ ! -f $NCCL_DEV_TMP_PATH ]; then
-    wget "$NCCL_URL_DEV" -O "$NCCL_DEV_TMP_PATH"
+    wget -q "$NCCL_URL_DEV" -O "$NCCL_DEV_TMP_PATH"
+    # echo $(md5sum $NCCL_DEV_TMP_PATH) > $NCCL_DEV_TMP_PATH.md5
   fi
+  # cp $NCCL_DEV_TMP_PATH /tmp
+  # NCCL_DEV_TMP_PATH=/tmp/$(basename $NCCL_DEV_TMP_PATH)
+
 
   mkdir -p "$NCCL_TMP_DIR_PATH"
   mkdir -p "$NCCL_DEV_TMP_DIR_PATH"
@@ -496,7 +510,7 @@ cuda.install.nccl() {
   ar x "$NCCL_TMP_PATH"
   tar -xJf data.tar.xz
   cd "$NCCL_DEV_TMP_DIR_PATH"
-  ar x "$NCCL_DEV_TMP_PATH"
+  ar vx "$NCCL_DEV_TMP_PATH"
   tar -xJf data.tar.xz
 
   echo "Install NCCL files."
@@ -504,21 +518,21 @@ cuda.install.nccl() {
   PARENT_BASE_DIR=$(dirname $CUDA_HOME)
   if [ ! -w "$PARENT_BASE_DIR" ]; then
     sudo mv $NCCL_TMP_DIR_PATH/usr/lib/x86_64-linux-gnu/libnccl* "$CUDA_HOME/lib64/"
-    sudo rm -f "$CUDA_HOME/include/nccl.h"
+    # sudo rm -f "$CUDA_HOME/include/nccl.h"
     sudo mv "$NCCL_DEV_TMP_DIR_PATH/usr/include/nccl.h" "$CUDA_HOME/include/nccl.h"
-    sudo rm -f "$CUDA_HOME/lib64/libnccl_static.a"
+    # sudo rm -f "$CUDA_HOME/lib64/libnccl_static.a"
     # sudo mv "$NCCL_DEV_TMP_DIR_PATH/usr/lib/x86_64-linux-gnu/libnccl_static.a" "$CUDA_HOME/lib64/libnccl_static.a"
   else
     mv $NCCL_TMP_DIR_PATH/usr/lib/x86_64-linux-gnu/libnccl* "$CUDA_HOME/lib64/"
-    rm -f "$CUDA_HOME/include/nccl.h"
+    # rm -f "$CUDA_HOME/include/nccl.h"
     mv "$NCCL_DEV_TMP_DIR_PATH/usr/include/nccl.h" "$CUDA_HOME/include/nccl.h"
-    rm -f "$CUDA_HOME/lib64/libnccl_static.a"
+    # rm -f "$CUDA_HOME/lib64/libnccl_static.a"
     # mv "$NCCL_DEV_TMP_DIR_PATH/usr/lib/x86_64-linux-gnu/libnccl_static.a" "$CUDA_HOME/lib64/libnccl_static.a"
   fi
 
   echo "Cleanup files."
-  rm -fr "$NCCL_TMP_DIR_PATH"
-  rm -fr "$NCCL_DEV_TMP_DIR_PATH"
+  # rm -fr "$NCCL_TMP_DIR_PATH"
+  # rm -fr "$NCCL_DEV_TMP_DIR_PATH"
 
   echo "NCCL $NCCL_VERSION is installed at $CUDA_HOME."
 }
@@ -539,3 +553,8 @@ cuda.gcc.install() {
   sudo update-alternatives --set gcc "/usr/bin/gcc-$GCC_VERSION"
   sudo update-alternatives --set g++ "/usr/bin/g++-$GCC_VERSION"
 }
+mkdir /src
+cuda.install.cuda $1
+cuda.install.cudnn $2
+cuda.install.nccl $3
+rm -rf /src/*
