@@ -129,7 +129,7 @@ if [ "$USE_GPU" -eq "1" ]; then
               //tensorflow/tools/pip_package:build_pip_package
 
   PACKAGE_NAME=tensorflow-gpu
-  SUBFOLDER_NAME="${TF_VERSION_GIT_TAG}-py${PYTHON_VERSION}-cuda${TF_CUDA_VERSION}-cudnn${TF_CUDNN_VERSION}"
+ export SUBFOLDER_NAME="${TF_VERSION_GIT_TAG}-py${PYTHON_VERSION}-cuda${TF_CUDA_VERSION}-cudnn${TF_CUDNN_VERSION}"
 
 else
 #--cxxopt=-std=c++11 \
@@ -153,4 +153,3 @@ bazel-bin/tensorflow/tools/pip_package/build_pip_package "/wheels/$SUBFOLDER_NAM
 # bazel-bin/tensorflow/tools/pip_package/build_pip_package "/wheels/$SUBFOLDER_NAME"
 
 # Fix wheel folder permissions
-chmod -R 777 /wheels/
