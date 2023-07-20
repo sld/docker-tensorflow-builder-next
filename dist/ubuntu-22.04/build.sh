@@ -92,7 +92,7 @@ export GCC_HOST_COMPILER_PATH=$(which gcc)
 
 # Here you can edit this variable to set any optimizations you want.
 # export CC_OPT_FLAGS="-march=native"
-export CC_OPT_FLAGS="-march=native -mssse3 -mcx16 -msse4.1 -msse4.2 -mpopcnt"
+export CC_OPT_FLAGS="-march=westmere -Wno-sign-compare"
 
 if [ "$USE_GPU" -eq "1" ]; then
   # Cuda parameters
@@ -117,6 +117,7 @@ fi
 # Compilation
 ./configure
 
+# Build TensorFlow
 if [ "$USE_GPU" -eq "1" ]; then
 
   bazel build --config=opt \
@@ -148,6 +149,10 @@ fi
 mkdir -p "/wheels/$SUBFOLDER_NAME"
 
 bazel-bin/tensorflow/tools/pip_package/build_pip_package "/wheels/$SUBFOLDER_NAME" --project_name "$PACKAGE_NAME"
+
+# Build tensorflow-text
+pip install /wheels/v2.12.0-py3.10.12/tensorflow-2.12.0-cp310-cp310-linux_x86_64.whl
+cd /text && ./oss_scripts/run_build.sh
 
 # Use the following for TF <= 1.8
 # bazel-bin/tensorflow/tools/pip_package/build_pip_package "/wheels/$SUBFOLDER_NAME"

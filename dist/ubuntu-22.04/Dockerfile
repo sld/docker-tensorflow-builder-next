@@ -1,4 +1,4 @@
-FROM nvidia/cuda:11.8.0-cudnn8-devel-ubuntu20.04
+FROM nvidia/cuda:11.8.0-cudnn8-devel-ubuntu22.04
 
 ENV TZ=Europe/Kiev
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
@@ -31,11 +31,12 @@ RUN wget "https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh"
 # ENV NCCL_VERSION 2.15
 # RUN /cuda.sh $CUDA_VERSION $CUDNN_VERSION $NCCL_VERSION
 
-ENV PYTHON_VERSION 3.8.0
+ENV PYTHON_VERSION 3.10.12
 ENV BAZEL_VERSION 5.3.0
 COPY conda.sh /conda.sh
 RUN /conda.sh $PYTHON_VERSION $BAZEL_VERSION
 
+RUN git clone https://github.com/tensorflow/text /text
 COPY build.sh /build.sh
 
 CMD bash build.sh

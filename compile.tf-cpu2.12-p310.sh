@@ -5,9 +5,9 @@ LINUX_DISTRO="ubuntu-22.04"
 cd "dist/$LINUX_DISTRO"
 
 # Set env variables
-export PYTHON_VERSION=3.8.0
+export PYTHON_VERSION=3.10.12
 
-export USE_GPU=1
+export USE_GPU=0
 export CUDA_VERSION=11.8
 export CUDNN_VERSION=8.7
 export NCCL_VERSION=2.15
@@ -16,7 +16,7 @@ export NCCL_VERSION=2.15
 
 export BAZEL_VERSION=5.3.0
 export TF_VERSION_GIT_TAG=v2.12.0
-export CC_OPT_FLAGS="-march=native -mssse3 -mcx16 -msse4.1 -msse4.2 -mpopcnt"
+export CC_OPT_FLAGS="-march=westmere -Wno-sign-compare"
 
 docker-compose rm -f
 
